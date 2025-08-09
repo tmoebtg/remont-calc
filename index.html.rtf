@@ -1,274 +1,366 @@
-{\rtf1\ansi\ansicpg1251\cocoartf2822
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww28600\viewh15160\viewkind0
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Калькулятор бюджета ремонта</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0f1115; --card:#171a21; --muted:#8892a6;
+      --fg:#e8ecf3; --accent:#7dd3fc; --accent-2:#22d3ee; --danger:#ff6b6b; --ok:#34d399;
+      --line:#232735; --chip:#10131a;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif}
+    .wrap{max-width:980px;margin:22px auto;padding:0 16px}
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
+      border:1px solid var(--line); border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      padding:22px;
+    }
+    h1{font-size:clamp(20px,2.6vw,28px);margin:0 0 14px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+    .row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin:10px 0 6px}
+    .field{grid-column:span 3;min-width:0}
+    .field.third{grid-column:span 4}
+    .field.full{grid-column:1/-1}
+    label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px 4px}
+    select,input{
+      width:100%; background:#0e1220; color:var(--fg); border:1px solid var(--line);
+      border-radius:12px; padding:12px 14px; font-size:16px; outline:none;
+    }
+    select:focus,input:focus{border-color:var(--accent)}
+    .hint{display:inline-block;background:#0b1220;border:1px solid var(--line);color:var(--accent);border-radius:999px;padding:6px 10px;font-size:12px;margin-left:8px}
+    .badge{display:inline-block;background:rgba(52,211,153,.15); color:var(--ok); border:1px solid rgba(52,211,153,.35); padding:6px 10px;border-radius:999px;font-size:12px;margin-left:8px}
 
-\f0\fs24 \cf0 <!DOCTYPE html>\
-<html lang="ru">\
-<head>\
-<meta charset="utf-8" />\
-<meta name="viewport" content="width=device-width,initial-scale=1" />\
-<title>\uc0\u1050 \u1072 \u1083 \u1100 \u1082 \u1091 \u1083 \u1103 \u1090 \u1086 \u1088  \u1073 \u1102 \u1076 \u1078 \u1077 \u1090 \u1072  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 \u1072 </title>\
-<link rel="preconnect" href="https://cdn.jsdelivr.net">\
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>\
-<style>\
-  :root \{ --bg:#0f0f12; --card:#17171c; --muted:#8b8b93; --txt:#f3f3f7; --green:#1dd979; --accent:#7c5cff; --red:#ff4d4d; \}\
-  *\{box-sizing:border-box\} body\{margin:0;background:var(--bg);color:var(--txt);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial\}\
-  .wrap\{max-width:900px;margin:auto;padding:20px\}\
-  .card\{background:var(--card);border:1px solid #272733;border-radius:16px;padding:16px;box-shadow:0 8px 40px rgba(0,0,0,.35)\}\
-  h1\{font-size:20px;margin:0 0 14px;font-weight:800\}\
-  .grid\{display:grid;grid-template-columns:repeat(12,1fr);gap:12px\}\
-  .row\{align-items:end\}\
-  .field\{grid-column:span 12\}\
-  @media(min-width:720px)\{ .field\{grid-column:span 6\} .field.third\{grid-column:span 4\} \}\
-  label\{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px\}\
-  select,input\{width:100%;background:#111116;border:1px solid #2a2a33;color:var(--txt);border-radius:12px;padding:12px 14px;font-size:16px;outline:none\}\
-  select:focus,input:focus\{border-color:#3f3ff0;box-shadow:0 0 0 3px rgba(63,63,240,.15)\}\
-  .hide\{display:none\}\
-  .table\{width:100%;border-collapse:collapse;margin-top:10px\}\
-  .table th,.table td\{padding:10px 8px;border-bottom:1px solid #2a2a33;text-align:right;white-space:nowrap\}\
-  .table th:first-child,.table td:first-child\{text-align:left\}\
-  .muted\{color:var(--muted)\}\
-  .total\{font-weight:800\}\
-  .tag\{display:inline-block;padding:2px 8px;border-radius:999px;background:#1b1b22;color:#c9c9d4;border:1px solid #2c2c36;font-size:12px\}\
-  .pill\{background:#19221d;border:1px solid #234d36;color:#99e6bf\}\
-  .sum\{font-size:22px;font-weight:900\}\
-  .hr\{height:1px;background:#2a2a33;margin:12px 0\}\
-  .note\{font-size:13px;color:#b6b6c2\}\
-  .ok\{color:var(--green)\} .bad\{color:var(--red)\}\
-</style>\
-</head>\
-<body>\
-  <div class="wrap">\
-    <div class="card">\
-      <h1>\uc0\u1050 \u1072 \u1083 \u1100 \u1082 \u1091 \u1083 \u1103 \u1090 \u1086 \u1088  \u1073 \u1102 \u1076 \u1078 \u1077 \u1090 \u1072  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 \u1072 </h1>\
-\
-      <!-- \uc0\u1059 \u1087 \u1088 \u1072 \u1074 \u1083 \u1103 \u1102 \u1097 \u1080 \u1077  \u1087 \u1086 \u1083 \u1103  -->\
-      <div class="grid row">\
-        <div class="field third">\
-          <label>\uc0\u1058 \u1080 \u1087  \u1078 \u1080 \u1083 \u1100 \u1103 </label>\
-          <select id="type">\
-            <option value="\uc0\u1053 \u1086 \u1074 \u1086 \u1089 \u1090 \u1088 \u1086 \u1081 \u1082 \u1072 ">\u1053 \u1086 \u1074 \u1086 \u1089 \u1090 \u1088 \u1086 \u1081 \u1082 \u1072 </option>\
-            <option value="\uc0\u1042 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1072 ">\u1042 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1072 </option>\
-          </select>\
-        </div>\
-        <div class="field third">\
-          <label>\uc0\u1058 \u1072 \u1088 \u1080 \u1092 </label>\
-          <select id="tier">\
-            <option value="\uc0\u1069 \u1082 \u1086 \u1085 \u1086 \u1084 ">\u1069 \u1082 \u1086 \u1085 \u1086 \u1084 </option>\
-            <option value="\uc0\u1057 \u1090 \u1072 \u1085 \u1076 \u1072 \u1088 \u1090 " selected>\u1057 \u1090 \u1072 \u1085 \u1076 \u1072 \u1088 \u1090 </option>\
-          </select>\
-        </div>\
-        <div class="field third">\
-          <label>\uc0\u1055 \u1083 \u1086 \u1097 \u1072 \u1076 \u1100 , \u1084 \'b2</label>\
-          <input id="area" type="number" inputmode="decimal" min="1" value="40">\
-        </div>\
-        <div class="field third">\
-          <label>\uc0\u1047 \u1072 \u1087 \u1072 \u1089 , %</label>\
-          <input id="reserve" type="number" inputmode="decimal" min="0" value="10">\
-        </div>\
-        <div class="field third" id="repairWrap">\
-          <label>\uc0\u1058 \u1080 \u1087  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 \u1072  (\u1076 \u1083 \u1103  \u1074 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1080 )</label>\
-          <select id="repair">\
-            <option value="\uc0\u1050 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1082 \u1072 ">\u1050 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1082 \u1072 </option>\
-            <option value="\uc0\u1055 \u1086 \u1083 \u1085 \u1099 \u1081  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 ">\u1055 \u1086 \u1083 \u1085 \u1099 \u1081  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 </option>\
-          </select>\
-        </div>\
-        <div class="field third">\
-          <label>&nbsp;</label>\
-          <span class="tag pill" id="statusTag">\uc0\u1043 \u1086 \u1090 \u1086 \u1074  \u1082  \u1088 \u1072 \u1089 \u1095 \u1105 \u1090 \u1091 </span>\
-        </div>\
-      </div>\
-\
-      <!-- \uc0\u1058 \u1072 \u1073 \u1083 \u1080 \u1094 \u1072  -->\
-      <table class="table" id="tbl">\
-        <thead>\
-          <tr>\
-            <th>\uc0\u1041 \u1083 \u1086 \u1082 </th>\
-            <th class="muted">\uc0\u1052 \u1072 \u1090 \u1077 \u1088 \u1080 \u1072 \u1083 \u1099  \u8381 /\u1084 \'b2</th>\
-            <th class="muted">\uc0\u1056 \u1072 \u1073 \u1086 \u1090 \u1099  \u8381 /\u1084 \'b2</th>\
-            <th class="muted">\uc0\u1048 \u1090 \u1086 \u1075 \u1086  \u8381 /\u1084 \'b2</th>\
-            <th class="muted">\uc0\u1055 \u1083 \u1086 \u1097 \u1072 \u1076 \u1100  \u1084 \'b2</th>\
-            <th>\uc0\u1052 \u1072 \u1090 \u1077 \u1088 \u1080 \u1072 \u1083 \u1099  \u8381 </th>\
-            <th>\uc0\u1056 \u1072 \u1073 \u1086 \u1090 \u1099  \u8381 </th>\
-            <th>\uc0\u1055 \u1086 \u1076 \u1099 \u1090 \u1086 \u1075  \u8381 </th>\
-          </tr>\
-        </thead>\
-        <tbody id="body"></tbody>\
-      </table>\
-\
-      <div class="grid" style="margin-top:14px">\
-        <div class="field" style="grid-column:span 7">\
-          <div class="hr"></div>\
-          <div class="grid">\
-            <div class="field third"><label>\uc0\u1048 \u1090 \u1086 \u1075 \u1086  \u1084 \u1072 \u1090 \u1077 \u1088 \u1080 \u1072 \u1083 \u1099  + \u1084 \u1077 \u1073 \u1077 \u1083 \u1100 </label><div class="sum" id="sumMM">0 \u8381 </div></div>\
-            <div class="field third"><label>\uc0\u1048 \u1090 \u1086 \u1075 \u1086  \u1088 \u1072 \u1073 \u1086 \u1090 \u1099 </label><div class="sum" id="sumW">0 \u8381 </div></div>\
-            <div class="field third"><label>\uc0\u1048 \u1090 \u1086 \u1075 \u1086 </label><div class="sum" id="sum">0 \u8381 </div></div>\
-            <div class="field third"><label>\uc0\u1048 \u1090 \u1086 \u1075 \u1086  \u1089  \u1079 \u1072 \u1087 \u1072 \u1089 \u1086 \u1084 </label><div class="sum ok" id="sumR">0 \u8381 </div></div>\
-          </div>\
-          <div class="hr"></div>\
-          <div class="note" id="desc"></div>\
-        </div>\
-        <div class="field" style="grid-column:span 5">\
-          <canvas id="chart" height="220"></canvas>\
-        </div>\
-      </div>\
-    </div>\
-  </div>\
-\
-<script>\
-const fmt = new Intl.NumberFormat('ru-RU');\
-\
-const PRICES = \{\
-  "\uc0\u1053 \u1086 \u1074 \u1086 \u1089 \u1090 \u1088 \u1086 \u1081 \u1082 \u1072 ": \{\
-    "\uc0\u1069 \u1082 \u1086 \u1085 \u1086 \u1084 ": \{\
-      rows: [\
-        \{block:"\uc0\u1063 \u1077 \u1088 \u1085 \u1086 \u1074 \u1099 \u1077 ", m:15000, w:10000, desc:"\u1064 \u1090 \u1091 \u1082 \u1072 \u1090 \u1091 \u1088 \u1082 \u1072 , \u1095 \u1077 \u1088 \u1085 \u1086 \u1074 \u1072 \u1103  \u1101 \u1083 \u1077 \u1082 \u1090 \u1088 \u1080 \u1082 \u1072 /\u1089 \u1072 \u1085 \u1090 \u1077 \u1093 \u1085 \u1080 \u1082 \u1072 , \u1089 \u1090 \u1103 \u1078 \u1082 \u1072  \'97 \u1087 \u1086 \u1076 \u1075 \u1086 \u1090 \u1086 \u1074 \u1082 \u1072  \u1087 \u1086 \u1076  \u1095 \u1080 \u1089 \u1090 \u1086 \u1074 \u1099 \u1077 ."\},\
-        \{block:"\uc0\u1063 \u1080 \u1089 \u1090 \u1086 \u1074 \u1099 \u1077 ", m:6000,  w:10000, desc:"\u1064 \u1087 \u1072 \u1082 \u1083 \u1105 \u1074 \u1082 \u1072  1 \u1089 \u1083 \u1086 \u1081 , \u1086 \u1073 \u1086 \u1080 /\u1083 \u1072 \u1084 \u1080 \u1085 \u1072 \u1090 , \u1073 \u1072 \u1079 \u1086 \u1074 \u1072 \u1103  \u1087 \u1083 \u1080 \u1090 \u1082 \u1072 , \u1085 \u1072 \u1090 \u1103 \u1078 \u1085 \u1086 \u1081  \u1087 \u1086 \u1090 \u1086 \u1083 \u1086 \u1082 ."\},\
-        \{block:"\uc0\u1052 \u1077 \u1073 \u1077 \u1083 \u1100 ",    m:25000, w:0,     desc:"\u1041 \u1072 \u1079 \u1086 \u1074 \u1072 \u1103  \u1084 \u1077 \u1073 \u1083 \u1080 \u1088 \u1086 \u1074 \u1082 \u1072 : \u1082 \u1091 \u1093 \u1085 \u1103  \u1101 \u1082 \u1086 \u1085 \u1086 \u1084 , \u1096 \u1082 \u1072 \u1092 \u1099 , \u1082 \u1088 \u1086 \u1074 \u1072 \u1090 \u1100 /\u1076 \u1080 \u1074 \u1072 \u1085 , \u1089 \u1090 \u1086 \u1083 /\u1089 \u1090 \u1091 \u1083 \u1100 \u1103 , \u1090 \u1077 \u1082 \u1089 \u1090 \u1080 \u1083 \u1100 , \u1090 \u1077 \u1093 \u1085 \u1080 \u1082 \u1072  \u1087 \u1086  \u1089 \u1087 \u1080 \u1089 \u1082 \u1091 ."\}\
-      ],\
-      note: "\uc0\u1069 \u1082 \u1086 \u1085 \u1086 \u1084  \u1076 \u1083 \u1103  \u1085 \u1086 \u1074 \u1086 \u1089 \u1090 \u1088 \u1086 \u1081 \u1082 \u1080 ."\
-    \},\
-    "\uc0\u1057 \u1090 \u1072 \u1085 \u1076 \u1072 \u1088 \u1090 ": \{\
-      rows: [\
-        \{block:"\uc0\u1063 \u1077 \u1088 \u1085 \u1086 \u1074 \u1099 \u1077 ", m:18000, w:12000, desc:"\u1064 \u1090 \u1091 \u1082 \u1072 \u1090 \u1091 \u1088 \u1082 \u1072 , \u1087 \u1086 \u1083 \u1085 \u1072 \u1103  \u1101 \u1083 \u1077 \u1082 \u1090 \u1088 \u1080 \u1082 \u1072  (\u1082 \u1072 \u1073 \u1077 \u1083 \u1080 , \u1097 \u1080 \u1090 , \u1072 \u1074 \u1090 \u1086 \u1084 \u1072 \u1090 \u1099 ), \u1088 \u1072 \u1079 \u1074 \u1086 \u1076 \u1082 \u1072  \u1074 \u1086 \u1076 \u1099 /\u1082 \u1072 \u1085 \u1072 \u1083 \u1080 \u1079 \u1072 \u1094 \u1080 \u1080 , \u1089 \u1090 \u1103 \u1078 \u1082 \u1072 ."\},\
-        \{block:"\uc0\u1063 \u1080 \u1089 \u1090 \u1086 \u1074 \u1099 \u1077 ", m:10000, w:15000, desc:"\u1064 \u1087 \u1072 \u1082 \u1083 \u1105 \u1074 \u1082 \u1072  2 \u1089 \u1083 \u1086 \u1103 , \u1086 \u1082 \u1088 \u1072 \u1089 \u1082 \u1072 , \u1082 \u1074 \u1072 \u1088 \u1094 -\u1074 \u1080 \u1085 \u1080 \u1083 /\u1091 \u1083 \u1091 \u1095 \u1096 \u1077 \u1085 \u1085 \u1099 \u1081  \u1083 \u1072 \u1084 \u1080 \u1085 \u1072 \u1090 , \u1087 \u1083 \u1080 \u1090 \u1082 \u1072  \u1083 \u1091 \u1095 \u1096 \u1077 , \u1076 \u1074 \u1077 \u1088 \u1080 /\u1092 \u1091 \u1088 \u1085 \u1080 \u1090 \u1091 \u1088 \u1072  \u1085 \u1072 \u1076 \u1105 \u1078 \u1085 \u1077 \u1077 ."\},\
-        \{block:"\uc0\u1052 \u1077 \u1073 \u1077 \u1083 \u1100 ",   m:30000, w:0,     desc:"\u1052 \u1077 \u1073 \u1077 \u1083 \u1100  \'ab\u1089 \u1088 \u1077 \u1076 \u1085 \u1080 \u1081 +\'bb: \u1082 \u1091 \u1093 \u1085 \u1103  \u1087 \u1086 \u1083 \u1091 \u1095 \u1096 \u1077 , \u1074 \u1089 \u1090 \u1088 \u1086 \u1077 \u1085 \u1085 \u1099 \u1077  \u1096 \u1082 \u1072 \u1092 \u1099 , \u1084 \u1103 \u1075 \u1082 \u1072 \u1103  \u1084 \u1077 \u1073 \u1077 \u1083 \u1100 , \u1090 \u1077 \u1082 \u1089 \u1090 \u1080 \u1083 \u1100 , \u1073 \u1072 \u1079 \u1086 \u1074 \u1072 \u1103  \u1090 \u1077 \u1093 \u1085 \u1080 \u1082 \u1072 ."\}\
-      ],\
-      note: "\uc0\u1057 \u1090 \u1072 \u1085 \u1076 \u1072 \u1088 \u1090  \u1076 \u1083 \u1103  \u1085 \u1086 \u1074 \u1086 \u1089 \u1090 \u1088 \u1086 \u1081 \u1082 \u1080 ."\
-    \}\
-  \},\
-  "\uc0\u1042 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1072 ": \{\
-    // \uc0\u1044 \u1083 \u1103  \u1074 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1080  \u1090 \u1072 \u1088 \u1080 \u1092  \u1074 \u1083 \u1080 \u1103 \u1077 \u1090  \u1085 \u1072  \u1094 \u1077 \u1085 \u1099  (\u1069 \u1082 \u1086 \u1085 \u1086 \u1084 /\u1057 \u1090 \u1072 \u1085 \u1076 \u1072 \u1088 \u1090 ), \u1087 \u1083 \u1102 \u1089  \u1090 \u1080 \u1087  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 \u1072 : \u1050 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1082 \u1072  | \u1055 \u1086 \u1083 \u1085 \u1099 \u1081  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 \
-    "\uc0\u1069 \u1082 \u1086 \u1085 \u1086 \u1084 ": \{\
-      "\uc0\u1050 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1082 \u1072 ": \{\
-        rows: [\
-          \{block:"\uc0\u1063 \u1080 \u1089 \u1090 \u1086 \u1074 \u1099 \u1077 ", m:12000, w:6000,  desc:"\u1050 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1082 \u1072 : \u1074 \u1099 \u1088 \u1072 \u1074 \u1085 \u1080 \u1074 \u1072 \u1085 \u1080 \u1077  \u1090 \u1086 \u1095 \u1077 \u1095 \u1085 \u1086 , \u1091 \u1083 \u1091 \u1095 \u1096 \u1077 \u1085 \u1085 \u1099 \u1077  \u1087 \u1086 \u1082 \u1088 \u1099 \u1090 \u1080 \u1103 , \u1082 \u1072 \u1095 \u1077 \u1089 \u1090 \u1074 \u1077 \u1085 \u1085 \u1072 \u1103  \u1092 \u1091 \u1088 \u1085 \u1080 \u1090 \u1091 \u1088 \u1072  \u1080  \u1089 \u1074 \u1077 \u1090 ."\},\
-          \{block:"\uc0\u1052 \u1077 \u1073 \u1077 \u1083 \u1100 ",   m:17000, w:0,     desc:"\u1052 \u1077 \u1073 \u1077 \u1083 \u1100  \'ab\u1089 \u1088 \u1077 \u1076 \u1085 \u1080 \u1081 \'bb: \u1082 \u1091 \u1093 \u1085 \u1103  \u1101 \u1082 \u1086 \u1085 \u1086 \u1084 +, \u1096 \u1082 \u1072 \u1092 \u1099 , \u1090 \u1077 \u1082 \u1089 \u1090 \u1080 \u1083 \u1100 , \u1090 \u1077 \u1093 \u1085 \u1080 \u1082 \u1072  \u1087 \u1086  \u1089 \u1087 \u1080 \u1089 \u1082 \u1091 ."\}\
-        ],\
-        note:"\uc0\u1042 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1072 : \u1082 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1095 \u1077 \u1089 \u1082 \u1080 \u1081  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090  (\u1101 \u1082 \u1086 \u1085 \u1086 \u1084 )."\
-      \},\
-      "\uc0\u1055 \u1086 \u1083 \u1085 \u1099 \u1081  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 ": \{\
-        rows: [\
-          \{block:"\uc0\u1063 \u1077 \u1088 \u1085 \u1086 \u1074 \u1099 \u1077 ", m:15000, w:12000, desc:"\u1055 \u1086 \u1083 \u1085 \u1099 \u1081  \u1076 \u1077 \u1084 \u1086 \u1085 \u1090 \u1072 \u1078 , \u1095 \u1077 \u1088 \u1085 \u1086 \u1074 \u1099 \u1077  \u1087 \u1086  \u1087 \u1088 \u1086 \u1077 \u1082 \u1090 \u1091 , \u1089 \u1090 \u1103 \u1078 \u1082 \u1072  \u1089  \u1074 \u1099 \u1088 \u1072 \u1074 \u1085 \u1080 \u1074 \u1072 \u1085 \u1080 \u1077 \u1084 ."\},\
-          \{block:"\uc0\u1063 \u1080 \u1089 \u1090 \u1086 \u1074 \u1099 \u1077 ", m:6000,  w:6000,  desc:"\u1054 \u1073 \u1086 \u1080 /\u1083 \u1072 \u1084 \u1080 \u1085 \u1072 \u1090 /\u1082 \u1074 \u1072 \u1088 \u1094 -\u1074 \u1080 \u1085 \u1080 \u1083 , \u1073 \u1072 \u1079 \u1086 \u1074 \u1072 \u1103  \u1087 \u1083 \u1080 \u1090 \u1082 \u1072 , \u1076 \u1074 \u1077 \u1088 \u1080 , \u1087 \u1083 \u1080 \u1085 \u1090 \u1091 \u1089 \u1072 , \u1089 \u1074 \u1077 \u1090 ."\},\
-          \{block:"\uc0\u1052 \u1077 \u1073 \u1077 \u1083 \u1100 ",   m:25000, w:0,     desc:"\u1041 \u1072 \u1079 \u1086 \u1074 \u1072 \u1103  \u1084 \u1077 \u1073 \u1083 \u1080 \u1088 \u1086 \u1074 \u1082 \u1072 : \u1082 \u1091 \u1093 \u1085 \u1103 , \u1096 \u1082 \u1072 \u1092 \u1099 , \u1076 \u1080 \u1074 \u1072 \u1085 , \u1089 \u1090 \u1086 \u1083 /\u1089 \u1090 \u1091 \u1083 \u1100 \u1103 , \u1090 \u1077 \u1082 \u1089 \u1090 \u1080 \u1083 \u1100 , \u1090 \u1077 \u1093 \u1085 \u1080 \u1082 \u1072 ."\}\
-        ],\
-        note:"\uc0\u1042 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1072 : \u1087 \u1086 \u1083 \u1085 \u1099 \u1081  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090  (\u1101 \u1082 \u1086 \u1085 \u1086 \u1084 )."\
-      \}\
-    \},\
-    "\uc0\u1057 \u1090 \u1072 \u1085 \u1076 \u1072 \u1088 \u1090 ": \{\
-      "\uc0\u1050 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1082 \u1072 ": \{\
-        rows: [\
-          \{block:"\uc0\u1063 \u1080 \u1089 \u1090 \u1086 \u1074 \u1099 \u1077 ", m:12000, w:12000, desc:"\u1050 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1082 \u1072  \'ab\u1088 \u1072 \u1089 \u1096 \u1080 \u1088 \u1077 \u1085 \u1085 \u1072 \u1103 \'bb: \u1088 \u1086 \u1074 \u1085 \u1099 \u1077  \u1089 \u1090 \u1077 \u1085 \u1099 /\u1087 \u1086 \u1090 \u1086 \u1083 \u1086 \u1082 , \u1087 \u1086 \u1082 \u1088 \u1099 \u1090 \u1080 \u1103  \u1083 \u1091 \u1095 \u1096 \u1077 , \u1089 \u1074 \u1077 \u1090 /\u1092 \u1091 \u1088 \u1085 \u1080 \u1090 \u1091 \u1088 \u1072  \u1082 \u1072 \u1095 \u1077 \u1089 \u1090 \u1074 \u1077 \u1085 \u1085 \u1077 \u1077 ."\},\
-          \{block:"\uc0\u1052 \u1077 \u1073 \u1077 \u1083 \u1100 ",   m:30000, w:0,     desc:"\u1052 \u1077 \u1073 \u1077 \u1083 \u1100  \'ab\u1089 \u1088 \u1077 \u1076 \u1085 \u1080 \u1081 +\'bb: \u1082 \u1091 \u1093 \u1085 \u1103  \u1087 \u1086 \u1083 \u1091 \u1095 \u1096 \u1077 , \u1074 \u1089 \u1090 \u1088 \u1086 \u1077 \u1085 \u1085 \u1099 \u1077  \u1096 \u1082 \u1072 \u1092 \u1099 , \u1084 \u1103 \u1075 \u1082 \u1072 \u1103  \u1084 \u1077 \u1073 \u1077 \u1083 \u1100 , \u1090 \u1077 \u1093 \u1085 \u1080 \u1082 \u1072 ."\}\
-        ],\
-        note:"\uc0\u1042 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1072 : \u1082 \u1086 \u1089 \u1084 \u1077 \u1090 \u1080 \u1095 \u1077 \u1089 \u1082 \u1080 \u1081  (\u1089 \u1090 \u1072 \u1085 \u1076 \u1072 \u1088 \u1090 )."\
-      \},\
-      "\uc0\u1055 \u1086 \u1083 \u1085 \u1099 \u1081  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090 ": \{\
-        rows: [\
-          \{block:"\uc0\u1063 \u1077 \u1088 \u1085 \u1086 \u1074 \u1099 \u1077 ", m:18000, w:15000, desc:"\u1055 \u1086 \u1083 \u1085 \u1099 \u1081  \u1076 \u1077 \u1084 \u1086 \u1085 \u1090 \u1072 \u1078 , \u1095 \u1077 \u1088 \u1085 \u1086 \u1074 \u1099 \u1077  \u1087 \u1086  \u1087 \u1088 \u1086 \u1077 \u1082 \u1090 \u1091 , \u1101 \u1083 \u1077 \u1082 \u1090 \u1088 \u1080 \u1082 \u1072 /\u1089 \u1072 \u1085 \u1090 \u1077 \u1093 \u1085 \u1080 \u1082 \u1072 , \u1089 \u1090 \u1103 \u1078 \u1082 \u1072  \u1087 \u1086 \u1076  \u1095 \u1080 \u1089 \u1090 \u1086 \u1074 \u1099 \u1077 ."\},\
-          \{block:"\uc0\u1063 \u1080 \u1089 \u1090 \u1086 \u1074 \u1099 \u1077 ", m:12000, w:12000, desc:"\u1050 \u1088 \u1072 \u1089 \u1082 \u1072  2 \u1089 \u1083 \u1086 \u1103 , \u1082 \u1074 \u1072 \u1088 \u1094 -\u1074 \u1080 \u1085 \u1080 \u1083 /\u1083 \u1091 \u1095 \u1096 \u1080 \u1081  \u1083 \u1072 \u1084 \u1080 \u1085 \u1072 \u1090 , \u1082 \u1072 \u1095 \u1077 \u1089 \u1090 \u1074 \u1077 \u1085 \u1085 \u1072 \u1103  \u1087 \u1083 \u1080 \u1090 \u1082 \u1072 /\u1076 \u1074 \u1077 \u1088 \u1080 /\u1092 \u1091 \u1088 \u1085 \u1080 \u1090 \u1091 \u1088 \u1072 ."\},\
-          \{block:"\uc0\u1052 \u1077 \u1073 \u1077 \u1083 \u1100 ",   m:30000, w:0,     desc:"\u1052 \u1077 \u1073 \u1077 \u1083 \u1100  \'ab\u1089 \u1088 \u1077 \u1076 \u1085 \u1080 \u1081 +\'bb: \u1082 \u1091 \u1093 \u1085 \u1103  \u1083 \u1091 \u1095 \u1096 \u1077 , \u1074 \u1089 \u1090 \u1088 \u1086 \u1077 \u1085 \u1085 \u1099 \u1077  \u1096 \u1082 \u1072 \u1092 \u1099 , \u1090 \u1077 \u1082 \u1089 \u1090 \u1080 \u1083 \u1100 , \u1090 \u1077 \u1093 \u1085 \u1080 \u1082 \u1072  \u1087 \u1086  \u1089 \u1087 \u1080 \u1089 \u1082 \u1091 ."\}\
-        ],\
-        note:"\uc0\u1042 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1072 : \u1087 \u1086 \u1083 \u1085 \u1099 \u1081  \u1088 \u1077 \u1084 \u1086 \u1085 \u1090  (\u1089 \u1090 \u1072 \u1085 \u1076 \u1072 \u1088 \u1090 )."\
-      \}\
-    \}\
-  \}\
-\};\
-\
-const el = (id)=>document.getElementById(id);\
-const $type=el('type'), $tier=el('tier'), $area=el('area'), $reserve=el('reserve'), $repair=el('repair'), $repairWrap=el('repairWrap');\
-const $body=el('body'), $sumMM=el('sumMM'), $sumW=el('sumW'), $sum=el('sum'), $sumR=el('sumR'), $desc=el('desc'), $status=el('statusTag');\
-\
-let chart;\
-function setupChart()\{\
-  const ctx=document.getElementById('chart');\
-  chart=new Chart(ctx,\{type:'doughnut',data:\{labels:[],datasets:[\{data:[]\}]\},options:\{\
-    plugins:\{legend:\{labels:\{color:'#d6d6df',boxWidth:14\}\}\},maintainAspectRatio:false\
-  \}\});\
-\}\
-\
-function setRepairVisibility()\{\
-  if($type.value==='\uc0\u1042 \u1090 \u1086 \u1088 \u1080 \u1095 \u1082 \u1072 ')\{ $repairWrap.classList.remove('hide'); \}\
-  else \{ $repairWrap.classList.add('hide'); \}\
-\}\
-\
-function currentRows()\{\
-  const t=$type.value, tier=$tier.value, r=$repair.value;\
-  if(t==='\uc0\u1053 \u1086 \u1074 \u1086 \u1089 \u1090 \u1088 \u1086 \u1081 \u1082 \u1072 ')\{ return PRICES[t][tier].rows; \}\
-  return PRICES[t][tier][r].rows;\
-\}\
-\
-function descriptionNote()\{\
-  const t=$type.value, tier=$tier.value, r=$repair.value;\
-  if(t==='\uc0\u1053 \u1086 \u1074 \u1086 \u1089 \u1090 \u1088 \u1086 \u1081 \u1082 \u1072 ') return PRICES[t][tier].note;\
-  return PRICES[t][tier][r].note;\
-\}\
-\
-function recalc()\{\
-  setRepairVisibility();\
-  const rows=currentRows();\
-  const area=Math.max(0, Number(($area.value||'').toString().replace(',','.')));\
-  const reserve = Math.max(0, Number(($reserve.value||'').toString().replace(',','.')));\
-  const data=[];\
-  let sumM=0, sumW=0;\
-  $body.innerHTML='';\
-  rows.forEach(r=>\{\
-    const perM2 = r.m + r.w;\
-    const m = Math.round(r.m * area);\
-    const w = Math.round(r.w * area);\
-    const sub = m + w;\
-    sumM += m + (r.block==='\uc0\u1052 \u1077 \u1073 \u1077 \u1083 \u1100 '?0:0); // \u1084 \u1077 \u1073 \u1077 \u1083 \u1100  \u1091 \u1078 \u1077  \u1074  m\
-    sumW += w;\
-    data.push(\{label:r.block, value:sub\});\
-    const tr=document.createElement('tr');\
-    tr.innerHTML = `\
-      <td>$\{r.block\}</td>\
-      <td class="muted">$\{fmt.format(r.m)\} \uc0\u8381 /\u1084 \'b2</td>\
-      <td class="muted">$\{fmt.format(r.w)\} \uc0\u8381 /\u1084 \'b2</td>\
-      <td class="muted">$\{fmt.format(perM2)\} \uc0\u8381 /\u1084 \'b2</td>\
-      <td class="muted">$\{fmt.format(area)\}</td>\
-      <td>$\{fmt.format(m)\} \uc0\u8381 </td>\
-      <td>$\{fmt.format(w)\} \uc0\u8381 </td>\
-      <td class="total">$\{fmt.format(sub)\} \uc0\u8381 </td>\
-    `;\
-    $body.appendChild(tr);\
-  \});\
-\
-  // \uc0\u1055 \u1077 \u1088 \u1077 \u1089 \u1095 \u1105 \u1090  \u1080 \u1090 \u1086 \u1075 \u1086 \u1074  (\u1084 \u1072 \u1090 \u1077 \u1088 \u1080 \u1072 \u1083 \u1099  + \u1084 \u1077 \u1073 \u1077 \u1083 \u1100  = \u1089 \u1091 \u1084 \u1084 \u1072  \u1074 \u1089 \u1077 \u1093  \u1084 \u1072 \u1090 \u1077 \u1088 \u1080 \u1072 \u1083 \u1086 \u1074  \u1087 \u1086  \u1089 \u1090 \u1088 \u1086 \u1082 \u1072 \u1084 )\
-  const sumMaterials = rows.reduce((acc,r)=> acc + Math.round(r.m*area), 0);\
-  const sumWorks     = rows.reduce((acc,r)=> acc + Math.round(r.w*area), 0);\
-  const total        = sumMaterials + sumWorks;\
-  const withReserve  = Math.round(total * (1 + reserve/100));\
-\
-  $sumMM.textContent = fmt.format(sumMaterials) + ' \uc0\u8381 ';\
-  $sumW.textContent  = fmt.format(sumWorks) + ' \uc0\u8381 ';\
-  $sum.textContent   = fmt.format(total) + ' \uc0\u8381 ';\
-  $sumR.textContent  = fmt.format(withReserve) + ' \uc0\u8381 ';\
-  $desc.textContent  = descriptionNote();\
-\
-  // \uc0\u1054 \u1073 \u1085 \u1086 \u1074 \u1083 \u1103 \u1077 \u1084  \u1076 \u1080 \u1072 \u1075 \u1088 \u1072 \u1084 \u1084 \u1091 \
-  chart.data.labels = data.map(d=>d.label);\
-  chart.data.datasets[0].data = data.map(d=>d.value);\
-  chart.update();\
-\
-  $status.textContent='\uc0\u1043 \u1086 \u1090 \u1086 \u1074 \u1086  \u10003 ';\
-\}\
-\
-['change','input'].forEach(ev=>\{\
-  $type.addEventListener(ev,recalc);\
-  $tier.addEventListener(ev,recalc);\
-  $area.addEventListener(ev,recalc);\
-  $reserve.addEventListener(ev,recalc);\
-  $repair.addEventListener(ev,recalc);\
-\});\
-\
-setupChart();\
-setRepairVisibility();\
-recalc();\
-</script>\
-</body>\
-</html>}
+    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+    table{border-collapse:collapse;min-width:720px;width:100%}
+    th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:right;white-space:nowrap}
+    th:first-child, td:first-child{text-align:left}
+    thead th{position:sticky;top:0;background:var(--card);z-index:1}
+    tbody tr:last-child td{border-bottom:none}
+
+    .totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 6px}
+    .total{
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      border:1px solid var(--line); border-radius:12px; padding:12px 14px
+    }
+    .total .label{color:var(--muted);font-size:12px}
+    .total .value{font-weight:700;font-size:18px;margin-top:4px}
+    .total .value.ok{color:var(--ok)}
+    .total .value.warn{color:#facc15}
+
+    .two{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:14px}
+    .box{
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
+      border:1px solid var(--line);border-radius:12px;padding:14px
+    }
+    .box h3{margin:0 0 10px;font-size:14px;color:var(--muted)}
+    ul{margin:0 0 4px 0;padding:0 0 0 18px}
+    li{margin:5px 0}
+    .cta{
+      margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between
+    }
+    .btn{
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:#001018; font-weight:700; border:none; padding:12px 18px; border-radius:12px; cursor:pointer; text-decoration:none
+    }
+    .btn:active{transform:translateY(1px)}
+    .muted{color:var(--muted);font-size:13px}
+
+    @media (max-width:880px){
+      .field{grid-column:span 6}
+      .field.third{grid-column:span 6}
+      .two{grid-template-columns:1fr}
+    }
+    @media (max-width:560px){
+      .field{grid-column:1/-1}
+      .totals{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Калькулятор бюджета ремонта</h1>
+
+      <div class="row">
+        <div class="field"><label>Тип жилья</label>
+          <select id="type">
+            <option>Новостройка</option>
+            <option selected>Вторичка</option>
+          </select>
+        </div>
+        <div class="field"><label>Тариф</label>
+          <select id="tier">
+            <option>Эконом</option>
+            <option selected>Стандарт</option>
+          </select>
+        </div>
+        <div class="field third"><label>Площадь, м²</label>
+          <input id="area" type="number" inputmode="decimal" value="40" />
+        </div>
+      </div>
+
+      <div class="row" id="secondaryRow" style="display:grid">
+        <div class="field"><label>Тип ремонта (для вторички)</label>
+          <select id="secondaryType">
+            <option>Косметика</option>
+            <option selected>Полный ремонт</option>
+          </select>
+        </div>
+        <div class="field"><label>Запас, %</label>
+          <input id="reserve" type="number" inputmode="decimal" value="10" />
+        </div>
+        <div class="field third" style="align-content:end">
+          <span class="badge" id="readyBadge">готов к расчёту</span>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead>
+          <tr>
+            <th>Блок</th>
+            <th>Материалы ₽/м²</th>
+            <th>Работы ₽/м²</th>
+            <th>Итого ₽/м²</th>
+            <th>Площадь м²</th>
+            <th>Материалы ₽</th>
+            <th>Работы ₽</th>
+            <th>Подытог ₽</th>
+          </tr>
+          </thead>
+          <tbody id="tbody">
+          <!-- строки заполняются JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="totals">
+        <div class="total">
+          <div class="label">Итого материалы + мебель</div>
+          <div class="value" id="sumMaterials">—</div>
+        </div>
+        <div class="total">
+          <div class="label">Итого работы</div>
+          <div class="value" id="sumWorks">—</div>
+        </div>
+        <div class="total">
+          <div class="label">Итого с запасом</div>
+          <div class="value ok" id="sumWithReserve">—</div>
+        </div>
+      </div>
+
+      <div class="two">
+        <div class="box">
+          <h3>Описание блока</h3>
+          <ul id="descList"></ul>
+        </div>
+        <div class="box">
+          <h3>Структура бюджета</h3>
+          <canvas id="pie" height="180"></canvas>
+        </div>
+      </div>
+
+      <div class="cta">
+        <div class="muted">Нужен детальный расчёт с артикулами, ссылками на магазины, шаблоном договора и чек-листами приёмки?</div>
+        <a class="btn" href="https://t.me/your_telegram_username" target="_blank" rel="noopener">Написать «ХОЧУ PRO»</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+/** ---- ПРАЙСЫ ----
+Структура: [материалы/м², работы/м²]
+*/
+const data = {
+  "Новостройка": {
+    "Эконом": {
+      "Черновые": [15000, 10000],
+      "Чистовые": [ 6000, 10000],
+      "Мебель"  : [25000,     0],
+    },
+    "Стандарт": {
+      "Черновые": [18000, 12000],
+      "Чистовые": [10000, 15000],
+      "Мебель"  : [30000,     0],
+    }
+  },
+  "Вторичка": {
+    // косметика = без черновых
+    "Эконом": {
+      "Косметика": {
+        "Чистовые": [ 6000,  6000],
+        "Мебель"  : [25000,     0],
+      },
+      "Полный ремонт": {
+        "Черновые": [15000, 12000],
+        "Чистовые": [ 6000,  6000],
+        "Мебель"  : [25000,     0],
+      }
+    },
+    "Стандарт": {
+      "Косметика": {
+        "Чистовые": [12000, 12000],
+        "Мебель"  : [30000,     0],
+      },
+      "Полный ремонт": {
+        "Черновые": [18000, 15000],
+        "Чистовые": [12000, 12000],
+        "Мебель"  : [30000,     0],
+      }
+    }
+  }
+};
+
+// Описания
+const descriptions = {
+  "Новостройка/Эконом": [
+    "Штукатурка стен, черновая электрика (кабели, щит, автоматы), разводка воды/канализации, стяжка пола.",
+    "Шпаклёвка в 1 слой, обои, ламинат, натяжной потолок, базовая плитка. Монтаж дверей, плинтусов, света.",
+    "Мебель «эконом»: базовая кухня, шкафы/стеллажи, текстиль по списку."
+  ],
+  "Новостройка/Стандарт": [
+    "Штукатурка, электрика/сантехника по проекту, стяжка с выравниванием. Материалы среднего класса.",
+    "Шпаклёвка в 2 слоя, окраска, кварц-винил/улучшенный ламинат, плитка лучше, двери/фурнитура надёжнее.",
+    "Мебель «средний+»: кухня получше, встроенные шкафы, мягкая мебель, техника по списку."
+  ],
+  "Вторичка/Эконом/Косметика": [
+    "Расширенная косметика: выравнивание стен/потолка точечно, улучшенные покрытия, качественная фурнитура и свет.",
+    "Без черновых: аккуратный демонтаж старого, новая отделка, локальная замена розеток/сантехники по необходимости.",
+    "Мебель «эконом/средний»: базовая кухня, шкафы, текстиль."
+  ],
+  "Вторичка/Эконом/Полный ремонт": [
+    "Полный демонтаж, черновые по проекту, стяжка с выравниванием. Материалы в эконом-уровне.",
+    "Чистовые попроще: обои/покраска, ламинат, базовая плитка. Монтаж дверей, плинтусов, света.",
+    "Мебель «эконом»: базовая кухня, шкафы, текстиль."
+  ],
+  "Вторичка/Стандарт/Косметика": [
+    "Расширенная косметика: выравнивание, улучшенные покрытия, свет и фурнитура хорошего уровня.",
+    "Работы и материалы уровня «стандарт».",
+    "Мебель «средний+»: кухня лучше, шкафы встроенные, текстиль, техника по списку."
+  ],
+  "Вторичка/Стандарт/Полный ремонт": [
+    "Полный демонтаж, черновые по проекту. Электрика/сантехника, стяжка с выравниванием.",
+    "Чистовые «стандарт»: покраска, кварц-винил, плитка лучше, двери и фурнитура надёжнее.",
+    "Мебель «средний+»: кухня получше, встроенные шкафы, мягкая мебель, техника."
+  ]
+};
+
+// элементы
+const el = (id)=>document.getElementById(id);
+const typeSel = el('type');
+const tierSel = el('tier');
+const areaInp = el('area');
+const secRow  = el('secondaryRow');
+const secType = el('secondaryType');
+const reserve = el('reserve');
+const tbody   = el('tbody');
+const sumM    = el('sumMaterials');
+const sumW    = el('sumWorks');
+const sumAll  = el('sumWithReserve');
+const descUL  = el('descList');
+
+let chart;
+
+// расчет
+function recalc(){
+  const type = typeSel.value;
+  const tier = tierSel.value;
+  const A = Math.max(0, Number(areaInp.value||0));
+  const R = Math.max(0, Number(reserve.value||0))/100;
+
+  // показать/скрыть «Тип ремонта»
+  if (type === 'Вторичка'){
+    secRow.style.display = 'grid';
+  } else {
+    secRow.style.display = 'none';
+  }
+
+  // выбрать прайс-лист
+  let blocks = {};
+  if (type === 'Новостройка'){
+    blocks = data['Новостройка'][tier];
+  } else {
+    const sec = secType.value;
+    blocks = data['Вторичка'][tier][sec];
+  }
+
+  // таблица
+  tbody.innerHTML = '';
+  let sumMat = 0, sumWork = 0, sumFurn = 0;
+  Object.entries(blocks).forEach(([name,[m2mat, m2work]])=>{
+    const perM = m2mat + m2work;
+    const mat  = m2mat * A;
+    const work = m2work * A;
+    const row  = document.createElement('tr');
+    row.innerHTML = `
+      <td>${name}</td>
+      <td>${m2mat.toLocaleString('ru-RU')} ₽/м²</td>
+      <td>${m2work.toLocaleString('ru-RU')} ₽/м²</td>
+      <td>${perM.toLocaleString('ru-RU')} ₽/м²</td>
+      <td>${A}</td>
+      <td>${mat.toLocaleString('ru-RU')} ₽</td>
+      <td>${work.toLocaleString('ru-RU')} ₽</td>
+      <td>${(mat+work).toLocaleString('ru-RU')} ₽</td>`;
+    tbody.appendChild(row);
+
+    if (name === 'Мебель'){
+      sumFurn += mat; // мебель только материалами
+    } else {
+      sumMat += mat;
+      sumWork += work;
+    }
+  });
+
+  const materialsPlusFurniture = sumMat + sumFurn;
+  const withReserve = Math.round((materialsPlusFurniture + sumWork) * (1+R));
+
+  sumM.textContent = materialsPlusFurniture.toLocaleString('ru-RU') + ' ₽';
+  sumW.textContent = sumWork.toLocaleString('ru-RU') + ' ₽';
+  sumAll.textContent = withReserve.toLocaleString('ru-RU') + ' ₽';
+
+  // описания
+  let key = '';
+  if (type === 'Новостройка') key = `${type}/${tier}`;
+  else key = `${type}/${tier}/${secType.value}`;
+  renderDesc(descriptions[key] || []);
+
+  // диаграмма
+  renderPie([sumMat, sumWork, sumFurn]);
+}
+
+function renderDesc(list){
+  descUL.innerHTML = '';
+  list.forEach(t=>{
+    const li = document.createElement('li');
+    li.textContent = t;
+    descUL.appendChild(li);
+  });
+}
+
+function renderPie([mat,work,furn]){
+  const ctx = document.getElementById('pie');
+  const data = {
+    labels: ['Материалы', 'Работы', 'Мебель'],
+    datasets: [{ data: [mat,work,furn] }]
+  };
+  const opts = {
+    plugins:{ legend:{ position:'bottom', labels:{ color:'#cbd5e1'} } },
+    responsive:true, maintainAspectRatio:false,
+    cutout:'55%'
+  };
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, { type:'doughnut', data, options:opts });
+}
+
+// события
+[typeSel, tierSel, areaInp, secType, reserve].forEach(x=>x.addEventListener('input', recalc));
+
+// старт
+recalc();
+</script>
+</body>
+</html>
