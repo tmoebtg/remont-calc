@@ -1,365 +1,395 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Калькулятор бюджета ремонта</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <style>
-    :root{
-      --bg:#0f1115; --card:#171a21; --muted:#8892a6;
-      --fg:#e8ecf3; --accent:#7dd3fc; --accent-2:#22d3ee; --danger:#ff6b6b; --ok:#34d399;
-      --line:#232735; --chip:#10131a;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif}
-    .wrap{max-width:980px;margin:22px auto;padding:0 16px}
-    .card{
-      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
-      border:1px solid var(--line); border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.35);
-      padding:22px;
-    }
-    h1{font-size:clamp(20px,2.6vw,28px);margin:0 0 14px}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-    .row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin:10px 0 6px}
-    .field{grid-column:span 3;min-width:0}
-    .field.third{grid-column:span 4}
-    .field.full{grid-column:1/-1}
-    label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px 4px}
-    select,input{
-      width:100%; background:#0e1220; color:var(--fg); border:1px solid var(--line);
-      border-radius:12px; padding:12px 14px; font-size:16px; outline:none;
-    }
-    select:focus,input:focus{border-color:var(--accent)}
-    .hint{display:inline-block;background:#0b1220;border:1px solid var(--line);color:var(--accent);border-radius:999px;padding:6px 10px;font-size:12px;margin-left:8px}
-    .badge{display:inline-block;background:rgba(52,211,153,.15); color:var(--ok); border:1px solid rgba(52,211,153,.35); padding:6px 10px;border-radius:999px;font-size:12px;margin-left:8px}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Калькулятор бюджета ремонта</title>
 
-    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
-    table{border-collapse:collapse;min-width:720px;width:100%}
-    th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:right;white-space:nowrap}
-    th:first-child, td:first-child{text-align:left}
-    thead th{position:sticky;top:0;background:var(--card);z-index:1}
-    tbody tr:last-child td{border-bottom:none}
+<!-- Chart.js + плагин процентов -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 
-    .totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 6px}
-    .total{
-      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
-      border:1px solid var(--line); border-radius:12px; padding:12px 14px
-    }
-    .total .label{color:var(--muted);font-size:12px}
-    .total .value{font-weight:700;font-size:18px;margin-top:4px}
-    .total .value.ok{color:var(--ok)}
-    .total .value.warn{color:#facc15}
+<style>
+:root{
+  --bg:#0f1216; --card:#161b22; --muted:#8892a6;
+  --accent:#22c55e; --danger:#ef4444; --ring:#2a2f39;
+  --text:#e5e7eb; --sub:#cbd5e1;
+  --blue:#5EA0FF; --pink:#FF7A8B; --orange:#FFB04D;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial}
+.wrapper{max-width:1120px;margin:32px auto;padding:0 16px}
+.card{background:var(--card);border:1px solid var(--ring);border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.35);padding:22px}
 
-    .two{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:14px}
-    .box{
-      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
-      border:1px solid var(--line);border-radius:12px;padding:14px
-    }
-    .box h3{margin:0 0 10px;font-size:14px;color:var(--muted)}
-    ul{margin:0 0 4px 0;padding:0 0 0 18px}
-    li{margin:5px 0}
-    .cta{
-      margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between
-    }
-    .btn{
-      background:linear-gradient(90deg,var(--accent),var(--accent-2));
-      color:#001018; font-weight:700; border:none; padding:12px 18px; border-radius:12px; cursor:pointer; text-decoration:none
-    }
-    .btn:active{transform:translateY(1px)}
-    .muted{color:var(--muted);font-size:13px}
+h1{font-size:28px;margin:0 0 14px}
+.row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin:16px 0 6px}
+.field{display:grid;gap:6px}
+.field label{font-size:12px;color:var(--sub)}
+select, input{
+  width:100%;background:#0d1117;border:1px solid var(--ring);color:var(--text);
+  border-radius:12px;height:44px;padding:0 14px;font-size:16px;outline:none
+}
+select:focus, input:focus{border-color:#3b82f6}
 
-    @media (max-width:880px){
-      .field{grid-column:span 6}
-      .field.third{grid-column:span 6}
-      .two{grid-template-columns:1fr}
-    }
-    @media (max-width:560px){
-      .field{grid-column:1/-1}
-      .totals{grid-template-columns:1fr}
-    }
-  </style>
+.table{width:100%;border-collapse:collapse;margin-top:10px}
+.table th,.table td{border:1px solid var(--ring);padding:10px 12px}
+.table th{background:#10151c;color:#cbd5e1}
+.table td{background:#0d1117}
+
+.badge{display:inline-block;padding:6px 10px;border-radius:10px;background:#0d1117;border:1px solid var(--ring);color:#cbd5e1;font-size:12px}
+
+.sums{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:16px 0}
+.sum{background:var(--card);border:1px solid var(--ring);border-radius:16px;padding:16px}
+.sum .label{color:var(--sub);font-size:12px}
+.sum .value{margin-top:6px;font-size:22px;font-weight:700}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.box{background:var(--card);border:1px solid var(--ring);border-radius:16px;padding:16px;min-height:360px}
+.box h3{margin:0 0 8px;font-size:16px;color:#cbd5e1}
+
+.desc ul{margin:10px 0 0 20px}
+.desc li{margin:6px 0}
+
+.pie-wrap{background:var(--card);border:1px solid var(--ring);border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:center;min-height:360px}
+.pie-wrap canvas{width:100% !important;height:320px !important}
+
+.legend{display:flex;gap:14px;align-items:center;margin-top:10px;color:#cbd5e1;font-size:12px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px}
+.i-blue{background:var(--blue)} .i-pink{background:var(--pink)} .i-orange{background:var(--orange)}
+
+.cta{margin:24px 0 8px;display:flex;justify-content:flex-start}
+.btn{
+  background:#10b981;color:#061015;border:none;border-radius:12px;padding:12px 18px;
+  font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;display:inline-flex;gap:8px;align-items:center
+}
+.btn:hover{filter:brightness(1.07)}
+
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .pie-wrap{min-height:300px}
+  .pie-wrap canvas{height:260px !important}
+  .sums{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Калькулятор бюджета ремонта</h1>
+<div class="wrapper">
+  <div class="card">
+    <h1>Калькулятор бюджета ремонта</h1>
 
-      <div class="row">
-        <div class="field"><label>Тип жилья</label>
-          <select id="type">
-            <option>Новостройка</option>
-            <option selected>Вторичка</option>
-          </select>
-        </div>
-        <div class="field"><label>Тариф</label>
-          <select id="tier">
-            <option>Эконом</option>
-            <option selected>Стандарт</option>
-          </select>
-        </div>
-        <div class="field third"><label>Площадь, м²</label>
-          <input id="area" type="number" inputmode="decimal" value="40" />
-        </div>
+    <!-- Управляющие поля -->
+    <div class="row">
+      <div class="field" style="grid-column:span 4">
+        <label>Тип жилья</label>
+        <select id="typeSel">
+          <option value="Новостройка">Новостройка</option>
+          <option value="Вторичка">Вторичка</option>
+        </select>
       </div>
 
-      <div class="row" id="secondaryRow" style="display:grid">
-        <div class="field"><label>Тип ремонта (для вторички)</label>
-          <select id="secondaryType">
-            <option>Косметика</option>
-            <option selected>Полный ремонт</option>
-          </select>
-        </div>
-        <div class="field"><label>Запас, %</label>
-          <input id="reserve" type="number" inputmode="decimal" value="10" />
-        </div>
-        <div class="field third" style="align-content:end">
-          <span class="badge" id="readyBadge">готов к расчёту</span>
-        </div>
+      <div class="field" style="grid-column:span 4">
+        <label>Тариф</label>
+        <select id="tierSel">
+          <option value="Эконом">Эконом</option>
+          <option value="Стандарт">Стандарт</option>
+        </select>
       </div>
 
-      <div class="table-wrap" style="margin-top:10px">
-        <table>
-          <thead>
-          <tr>
-            <th>Блок</th>
-            <th>Материалы ₽/м²</th>
-            <th>Работы ₽/м²</th>
-            <th>Итого ₽/м²</th>
-            <th>Площадь м²</th>
-            <th>Материалы ₽</th>
-            <th>Работы ₽</th>
-            <th>Подытог ₽</th>
-          </tr>
-          </thead>
-          <tbody id="tbody">
-          <!-- строки заполняются JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <div class="totals">
-        <div class="total">
-          <div class="label">Итого материалы + мебель</div>
-          <div class="value" id="sumMaterials">—</div>
-        </div>
-        <div class="total">
-          <div class="label">Итого работы</div>
-          <div class="value" id="sumWorks">—</div>
-        </div>
-        <div class="total">
-          <div class="label">Итого с запасом</div>
-          <div class="value ok" id="sumWithReserve">—</div>
-        </div>
-      </div>
-
-      <div class="two">
-        <div class="box">
-          <h3>Описание блока</h3>
-          <ul id="descList"></ul>
-        </div>
-        <div class="box">
-          <h3>Структура бюджета</h3>
-          <canvas id="pie" height="180"></canvas>
-        </div>
-      </div>
-
-      <div class="cta">
-        <div class="muted">Нужен детальный расчёт с артикулами, ссылками на магазины, шаблоном договора и чек-листами приёмки?</div>
-        <a class="btn" href="https://t.me/your_telegram_username" target="_blank" rel="noopener">Написать «ХОЧУ PRO»</a>
+      <div class="field" style="grid-column:span 4">
+        <label>Площадь, м²</label>
+        <input id="areaInp" type="number" min="1" step="1" value="50" />
       </div>
     </div>
+
+    <div class="row">
+      <div class="field" style="grid-column:span 4">
+        <label>Запас, %</label>
+        <input id="reserveInp" type="number" min="0" step="1" value="10" />
+      </div>
+
+      <div class="field" style="grid-column:span 4">
+        <label>Тип ремонта (для вторички)</label>
+        <select id="secTypeSel">
+          <option value="Косметика">Косметика</option>
+          <option value="Полный ремонт">Полный ремонт</option>
+        </select>
+      </div>
+
+      <div class="field" style="grid-column:span 4;display:flex;align-items:flex-end">
+        <span class="badge" id="readyBadge">Готово к расчёту</span>
+      </div>
+    </div>
+
+    <!-- Таблица -->
+    <table class="table" id="tbl">
+      <thead>
+        <tr>
+          <th>Блок</th>
+          <th>Материалы ₽/м²</th>
+          <th>Работы ₽/м²</th>
+          <th>Итого ₽/м²</th>
+          <th>Площадь м²</th>
+          <th>Материалы ₽</th>
+          <th>Работы ₽</th>
+          <th>Подытог ₽</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+
+    <!-- Суммы -->
+    <div class="sums">
+      <div class="sum"><div class="label">Итого материалы + мебель</div><div class="value" id="sumMat"></div></div>
+      <div class="sum"><div class="label">Итого работы</div><div class="value" id="sumWork"></div></div>
+      <div class="sum"><div class="label">Итого с запасом</div><div class="value" id="sumReserve"></div></div>
+    </div>
+
+    <div class="grid">
+      <div class="box desc">
+        <h3>Описание блока</h3>
+        <ul id="descList"></ul>
+      </div>
+
+      <div class="pie-wrap">
+        <canvas id="pie"></canvas>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i class="i-blue"></i>Материалы</span>
+      <span><i class="i-pink"></i>Работы</span>
+      <span><i class="i-orange"></i>Мебель</span>
+    </div>
+
+    <div class="cta">
+      <a class="btn" href="https://t.me/soloveu" target="_blank" rel="noopener">
+        Написать «ХОЧУ PRO»
+      </a>
+    </div>
   </div>
+</div>
 
 <script>
-/** ---- ПРАЙСЫ ----
-Структура: [материалы/м², работы/м²]
-*/
-const data = {
-  "Новостройка": {
-    "Эконом": {
-      "Черновые": [15000, 10000],
-      "Чистовые": [ 6000, 10000],
-      "Мебель"  : [25000,     0],
+/* ------------------ ДАННЫЕ ------------------ */
+const DATA = {
+  'Новостройка': {
+    'Эконом': {
+      blocks: [
+        {name:'Черновые', m:15000, w:10000},
+        {name:'Чистовые', m: 6000, w:10000},
+        {name:'Мебель',    m:25000, w:    0},
+      ],
+      desc: [
+        'Штукатурка, электрика/сантехника по проекту, стяжка с выравниванием. Материалы среднего класса.',
+        'Шпаклёвка в 1 слой, обои, ламинат, недорогие натяжные потолки, базовая плитка, двери/фурнитура попроще.',
+        'Мебель «средний»: кухня эконом, шкафы, мягкая мебель, техника по списку.'
+      ]
     },
-    "Стандарт": {
-      "Черновые": [18000, 12000],
-      "Чистовые": [10000, 15000],
-      "Мебель"  : [30000,     0],
+    'Стандарт': {
+      blocks: [
+        {name:'Черновые', m:18000, w:12000},
+        {name:'Чистовые', m:10000, w:15000},
+        {name:'Мебель',    m:30000, w:    0},
+      ],
+      desc: [
+        'Черновые по проекту, качественная инженерка, ровные базы под чистовые.',
+        'Шпаклёвка 2 слоя/краска, кварц-винил/улучшенные покрытия, плитка лучше, двери/фурнитура надёжнее.',
+        'Мебель «средний+»: кухня получше, встроенные шкафы, текстиль, техника получше.'
+      ]
     }
   },
-  "Вторичка": {
-    // косметика = без черновых
-    "Эконом": {
-      "Косметика": {
-        "Чистовые": [ 6000,  6000],
-        "Мебель"  : [25000,     0],
+
+  'Вторичка': {
+    'Эконом': {
+      'Косметика': {
+        blocks: [
+          {name:'Чистовые', m: 6000, w: 6000},
+          {name:'Мебель',    m:17000, w:    0},
+        ],
+        desc: [
+          'Расширенная косметика: выравнивание стен/потолка точечно, улучшенные покрытия, качественная фурнитура и свет.',
+          'Мебель «средний+»: кухня получше, встроенные шкафы, мягкая мебель, техника по списку.'
+        ]
       },
-      "Полный ремонт": {
-        "Черновые": [15000, 12000],
-        "Чистовые": [ 6000,  6000],
-        "Мебель"  : [25000,     0],
+      'Полный ремонт': {
+        blocks: [
+          {name:'Черновые', m:15000, w:12000},
+          {name:'Чистовые', m: 6000, w: 6000},
+          {name:'Мебель',    m:25000, w:    0},
+        ],
+        desc: [
+          'Полный демонтаж, черновые по проекту, стяжка с выравниванием. Материалы среднего класса.',
+          'Шпаклёвка 2 слоя, окраска, кварц-винил/лучшая плитка, двери/фурнитура надёжнее.',
+          'Мебель «средний+»: кухня получше, встроенные шкафы, текстиль, техника по списку.'
+        ]
       }
     },
-    "Стандарт": {
-      "Косметика": {
-        "Чистовые": [12000, 12000],
-        "Мебель"  : [30000,     0],
+    'Стандарт': {
+      'Косметика': {
+        blocks: [
+          {name:'Чистовые', m:12000, w:12000},
+          {name:'Мебель',    m:30000, w:    0},
+        ],
+        desc: [
+          'Косметика уровня «стандарт»: выравнивания больше, материалы выше классом.',
+          'Мебель «средний+»: кухня получше, встроенные шкафы, текстиль, техника по списку.'
+        ]
       },
-      "Полный ремонт": {
-        "Черновые": [18000, 15000],
-        "Чистовые": [12000, 12000],
-        "Мебель"  : [30000,     0],
+      'Полный ремонт': {
+        blocks: [
+          {name:'Черновые', m:18000, w:15000},
+          {name:'Чистовые', m:12000, w:12000},
+          {name:'Мебель',    m:30000, w:    0},
+        ],
+        desc: [
+          'Полный демонтаж, новые инженерные сети, черновые под чистовую идею.',
+          'Чистовые выше классом: краска, плитка, напольные покрытия, двери/фурнитура.',
+          'Мебель «средний+»: кухня получше, встроенные шкафы, текстиль, техника по списку.'
+        ]
       }
     }
   }
 };
 
-// Описания
-const descriptions = {
-  "Новостройка/Эконом": [
-    "Штукатурка стен, черновая электрика (кабели, щит, автоматы), разводка воды/канализации, стяжка пола.",
-    "Шпаклёвка в 1 слой, обои, ламинат, натяжной потолок, базовая плитка. Монтаж дверей, плинтусов, света.",
-    "Мебель «эконом»: базовая кухня, шкафы/стеллажи, текстиль по списку."
-  ],
-  "Новостройка/Стандарт": [
-    "Штукатурка, электрика/сантехника по проекту, стяжка с выравниванием. Материалы среднего класса.",
-    "Шпаклёвка в 2 слоя, окраска, кварц-винил/улучшенный ламинат, плитка лучше, двери/фурнитура надёжнее.",
-    "Мебель «средний+»: кухня получше, встроенные шкафы, мягкая мебель, техника по списку."
-  ],
-  "Вторичка/Эконом/Косметика": [
-    "Расширенная косметика: выравнивание стен/потолка точечно, улучшенные покрытия, качественная фурнитура и свет.",
-    "Без черновых: аккуратный демонтаж старого, новая отделка, локальная замена розеток/сантехники по необходимости.",
-    "Мебель «эконом/средний»: базовая кухня, шкафы, текстиль."
-  ],
-  "Вторичка/Эконом/Полный ремонт": [
-    "Полный демонтаж, черновые по проекту, стяжка с выравниванием. Материалы в эконом-уровне.",
-    "Чистовые попроще: обои/покраска, ламинат, базовая плитка. Монтаж дверей, плинтусов, света.",
-    "Мебель «эконом»: базовая кухня, шкафы, текстиль."
-  ],
-  "Вторичка/Стандарт/Косметика": [
-    "Расширенная косметика: выравнивание, улучшенные покрытия, свет и фурнитура хорошего уровня.",
-    "Работы и материалы уровня «стандарт».",
-    "Мебель «средний+»: кухня лучше, шкафы встроенные, текстиль, техника по списку."
-  ],
-  "Вторичка/Стандарт/Полный ремонт": [
-    "Полный демонтаж, черновые по проекту. Электрика/сантехника, стяжка с выравниванием.",
-    "Чистовые «стандарт»: покраска, кварц-винил, плитка лучше, двери и фурнитура надёжнее.",
-    "Мебель «средний+»: кухня получше, встроенные шкафы, мягкая мебель, техника."
-  ]
+/* ------------- ЭЛЕМЕНТЫ ------------- */
+const typeSel    = document.getElementById('typeSel');
+const tierSel    = document.getElementById('tierSel');
+const secTypeSel = document.getElementById('secTypeSel');
+const areaInp    = document.getElementById('areaInp');
+const reserveInp = document.getElementById('reserveInp');
+const tbody      = document.getElementById('tbody');
+const sumMat     = document.getElementById('sumMat');
+const sumWork    = document.getElementById('sumWork');
+const sumRes     = document.getElementById('sumReserve');
+const descList   = document.getElementById('descList');
+
+/* ------------- УТИЛИТЫ ------------- */
+const F = n => (n||0).toLocaleString('ru-RU') + ' ₽';
+const clampArea = () => {
+  let v = parseInt(areaInp.value||0,10);
+  if (isNaN(v)||v<1) v=1;
+  if (v>10000) v=10000;
+  areaInp.value = v;
 };
 
-// элементы
-const el = (id)=>document.getElementById(id);
-const typeSel = el('type');
-const tierSel = el('tier');
-const areaInp = el('area');
-const secRow  = el('secondaryRow');
-const secType = el('secondaryType');
-const reserve = el('reserve');
-const tbody   = el('tbody');
-const sumM    = el('sumMaterials');
-const sumW    = el('sumWorks');
-const sumAll  = el('sumWithReserve');
-const descUL  = el('descList');
-
-let chart;
-
-// расчет
+/* ------------- РЕНДЕР ------------- */
 function recalc(){
+  clampArea();
   const type = typeSel.value;
   const tier = tierSel.value;
-  const A = Math.max(0, Number(areaInp.value||0));
-  const R = Math.max(0, Number(reserve.value||0))/100;
+  const secT = secTypeSel.value;
+  const area = parseInt(areaInp.value||0,10);
+  const reserve = Math.max(0, parseInt(reserveInp.value||0,10));
 
-  // показать/скрыть «Тип ремонта»
-  if (type === 'Вторичка'){
-    secRow.style.display = 'grid';
-  } else {
-    secRow.style.display = 'none';
-  }
-
-  // выбрать прайс-лист
-  let blocks = {};
-  if (type === 'Новостройка'){
-    blocks = data['Новостройка'][tier];
-  } else {
-    const sec = secType.value;
-    blocks = data['Вторичка'][tier][sec];
-  }
+  // для новостройки игнорируем селектор вторички
+  const conf = (type === 'Вторичка')
+    ? DATA[type][tier][secT]
+    : DATA[type][tier];
 
   // таблица
   tbody.innerHTML = '';
-  let sumMat = 0, sumWork = 0, sumFurn = 0;
-  Object.entries(blocks).forEach(([name,[m2mat, m2work]])=>{
-    const perM = m2mat + m2work;
-    const mat  = m2mat * A;
-    const work = m2work * A;
-    const row  = document.createElement('tr');
-    row.innerHTML = `
-      <td>${name}</td>
-      <td>${m2mat.toLocaleString('ru-RU')} ₽/м²</td>
-      <td>${m2work.toLocaleString('ru-RU')} ₽/м²</td>
-      <td>${perM.toLocaleString('ru-RU')} ₽/м²</td>
-      <td>${A}</td>
-      <td>${mat.toLocaleString('ru-RU')} ₽</td>
-      <td>${work.toLocaleString('ru-RU')} ₽</td>
-      <td>${(mat+work).toLocaleString('ru-RU')} ₽</td>`;
-    tbody.appendChild(row);
+  let totalMat = 0, totalWork = 0, totalAll = 0, furnSum = 0;
 
-    if (name === 'Мебель'){
-      sumFurn += mat; // мебель только материалами
-    } else {
-      sumMat += mat;
-      sumWork += work;
-    }
+  conf.blocks.forEach(b=>{
+    const per = (b.m + b.w);
+    const mSum = b.m * area;
+    const wSum = b.w * area;
+    const rowSum = mSum + wSum;
+
+    if (b.name === 'Мебель') furnSum += mSum;
+
+    totalMat  += mSum;
+    totalWork += wSum;
+    totalAll  += rowSum;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${b.name}</td>
+      <td>${(b.m).toLocaleString('ru-RU')} ₽/м²</td>
+      <td>${(b.w).toLocaleString('ru-RU')} ₽/м²</td>
+      <td>${(per).toLocaleString('ru-RU')} ₽/м²</td>
+      <td>${area}</td>
+      <td>${F(mSum)}</td>
+      <td>${F(wSum)}</td>
+      <td>${F(rowSum)}</td>
+    `;
+    tbody.appendChild(tr);
   });
 
-  const materialsPlusFurniture = sumMat + sumFurn;
-  const withReserve = Math.round((materialsPlusFurniture + sumWork) * (1+R));
+  sumMat.textContent  = F(totalMat);
+  sumWork.textContent = F(totalWork);
+  const withReserve = Math.round(totalAll * (1 + reserve/100));
+  sumRes.textContent = F(withReserve);
 
-  sumM.textContent = materialsPlusFurniture.toLocaleString('ru-RU') + ' ₽';
-  sumW.textContent = sumWork.toLocaleString('ru-RU') + ' ₽';
-  sumAll.textContent = withReserve.toLocaleString('ru-RU') + ' ₽';
-
-  // описания
-  let key = '';
-  if (type === 'Новостройка') key = `${type}/${tier}`;
-  else key = `${type}/${tier}/${secType.value}`;
-  renderDesc(descriptions[key] || []);
-
-  // диаграмма
-  renderPie([sumMat, sumWork, sumFurn]);
-}
-
-function renderDesc(list){
-  descUL.innerHTML = '';
-  list.forEach(t=>{
+  // описание
+  descList.innerHTML = '';
+  conf.desc.forEach(t=>{
     const li = document.createElement('li');
     li.textContent = t;
-    descUL.appendChild(li);
+    descList.appendChild(li);
+  });
+
+  // диаграмма (материалы/работы/мебель)
+  renderPie(totalMat - furnSum, totalWork, furnSum);
+}
+
+/* ------------- ПОНЧИК ------------- */
+let pie;
+function renderPie(mat, work, furn){
+  const ctx = document.getElementById('pie');
+  const data = [mat, work, furn];
+  const labels = ['Материалы', 'Работы', 'Мебель'];
+
+  if (pie) pie.destroy();
+
+  pie = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: ['var(--blue)','var(--pink)','var(--orange)'],
+        borderColor: '#1e1e1e', borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false, // высоту берём из CSS
+      plugins: {
+        legend: { display: true, position: 'bottom',
+          labels: { color:'#cbd5e1', usePointStyle:true, boxWidth:10 } },
+        tooltip: {
+          callbacks: {
+            label: (ctx)=>{
+              const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+              const v = ctx.raw||0;
+              const pct = total? Math.round(v/total*100) : 0;
+              return `${ctx.label}: ${v.toLocaleString('ru-RU')} ₽ (${pct}%)`;
+            }
+          }
+        },
+        datalabels: {
+          color:'#e2e8f0', font:{weight:700},
+          formatter:(value,ctx)=>{
+            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+            if (!total) return '';
+            const pct = Math.round(value/total*100);
+            return pct? pct+'%' : '';
+          }
+        }
+      },
+      cutout: '55%'
+    },
+    plugins: [ChartDataLabels]
   });
 }
 
-function renderPie([mat,work,furn]){
-  const ctx = document.getElementById('pie');
-  const data = {
-    labels: ['Материалы', 'Работы', 'Мебель'],
-    datasets: [{ data: [mat,work,furn] }]
-  };
-  const opts = {
-    plugins:{ legend:{ position:'bottom', labels:{ color:'#cbd5e1'} } },
-    responsive:true, maintainAspectRatio:false,
-    cutout:'55%'
-  };
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, { type:'doughnut', data, options:opts });
-}
+/* ------------- СОБЫТИЯ ------------- */
+[typeSel, tierSel, secTypeSel, areaInp, reserveInp].forEach(el=>{
+  el.addEventListener('input', recalc);
+});
 
-// события
-[typeSel, tierSel, areaInp, secType, reserve].forEach(x=>x.addEventListener('input', recalc));
-
-// старт
+/* старт */
 recalc();
 </script>
 </body>
